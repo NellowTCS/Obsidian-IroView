@@ -1,7 +1,4 @@
 {
-	"projectName": "Obsidian-IroView",
-	"projectOwner": "NellowTCS",
-	"repoType": "github",
-	"repoHost": "https://github.com",
-	"files": ["README.md"]
+  "projectName": "Obsidian-IroView",
+  "projectOwner": "NellowTCS"
 }
