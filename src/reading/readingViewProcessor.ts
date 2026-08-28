@@ -23,9 +23,9 @@ class ColorSpanChild extends MarkdownRenderChild {
 			.querySelectorAll(".cp-color-wrapper")
 			.forEach((wrapper) => {
 				wrapper.replaceWith(
-					(wrapper.ownerDocument ?? window.activeDocument).createTextNode(
-						wrapper.textContent ?? "",
-					),
+					(
+						wrapper.ownerDocument ?? window.activeDocument
+					).createTextNode(wrapper.textContent ?? ""),
 				);
 			});
 		this.containerEl.normalize();
@@ -42,13 +42,13 @@ class ColorSpanChild extends MarkdownRenderChild {
 		const walker = this.doc.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
 			acceptNode: (node) => {
 				if (!node.nodeValue?.trim()) return NodeFilter.FILTER_REJECT;
-				if ((node as Text).parentElement?.closest("code, pre"))
+				// Skip inline code spans (backticks) but keep fenced code blocks,
+				// which render as <pre><code>. A <code> directly inside a <pre> is
+				// a fenced block and should still be processed.
+				const parent = (node as Text).parentElement;
+				if (parent?.closest("code") && !parent.closest("pre"))
 					return NodeFilter.FILTER_REJECT;
-				if (
-					(node as Text).parentElement?.classList.contains(
-						"cp-color-wrapper",
-					)
-				)
+				if (parent?.classList.contains("cp-color-wrapper"))
 					return NodeFilter.FILTER_REJECT;
 				return NodeFilter.FILTER_ACCEPT;
 			},
@@ -97,7 +97,10 @@ class ColorSpanChild extends MarkdownRenderChild {
 		const label = this.doc.createElement("span");
 		label.textContent = color;
 
-		if (this.settings.colorizeTextInEditor && hasGoodContrast(color)) {
+		if (
+			this.settings.colorizeTextInEditor &&
+			hasGoodContrast(color, this.settings.ignoreContrast)
+		) {
 			label.className = "cp-colored-text";
 			label.setCssProps({ "--cp-text-color": color });
 		}

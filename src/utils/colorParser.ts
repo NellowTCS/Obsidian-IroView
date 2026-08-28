@@ -22,6 +22,9 @@ const COMBINED_SOURCE = [HEX_PATTERN, RGB_PATTERN, HSL_PATTERN]
 // Parsing
 function parseHex(hex: string): [number, number, number, number] | null {
 	const h = hex.slice(1);
+	// Reject any non-hex digit so partial parseInt results (e.g. "#fg0000"
+	// parsing as 0xf0000) are not treated as valid colors.
+	if (!/^[0-9a-fA-F]+$/.test(h)) return null;
 	let r: number,
 		g: number,
 		b: number,
@@ -93,6 +96,7 @@ function colorToRgba(
 		const l2 = parseFloat(parts[2]);
 		const a2 = parts[3] !== undefined ? parseFloat(parts[3]) * 255 : 255;
 		if (isNaN(h) || isNaN(s2) || isNaN(l2)) return null;
+		if (h < 0 || h > 360) return null;
 		if (s2 < 0 || s2 > 100 || l2 < 0 || l2 > 100) return null;
 		const [r, g, b] = hslToRgb(h, s2, l2);
 		return [r, g, b, a2];
@@ -123,7 +127,8 @@ function getThemeBackground(): [number, number, number] {
 		cachedBg = [parsed[0], parsed[1], parsed[2]];
 	} else {
 		// Unparseable format (oklch, color-mix, etc.)
-		const isDark = window.activeDocument.body.classList.contains("theme-dark");
+		const isDark =
+			window.activeDocument.body.classList.contains("theme-dark");
 		cachedBg = isDark ? [30, 30, 30] : [255, 255, 255];
 	}
 
@@ -156,11 +161,16 @@ function contrastRatio(
 	return (lighter + 0.05) / (darker + 0.05);
 }
 
-export function hasGoodContrast(colorStr: string): boolean {
+export function hasGoodContrast(
+	colorStr: string,
+	ignoreContrast = false,
+	bg?: [number, number, number],
+): boolean {
+	if (ignoreContrast) return true;
 	const rgba = colorToRgba(colorStr);
 	if (!rgba) return false;
-	const bg = getThemeBackground();
-	return contrastRatio([rgba[0], rgba[1], rgba[2]], bg) >= 3.0;
+	const background = bg ?? getThemeBackground();
+	return contrastRatio([rgba[0], rgba[1], rgba[2]], background) >= 3.0;
 }
 
 // Public helpers

@@ -3,11 +3,10 @@ import {
 	ViewPlugin,
 	ViewUpdate,
 	Decoration,
-	DecorationSet,
 	WidgetType,
 	MatchDecorator,
-	PluginValue,
 } from "@codemirror/view";
+import type { DecorationSet, PluginValue } from "@codemirror/view";
 import { hasGoodContrast } from "../utils/colorParser";
 import type { IroViewSettings } from "../types";
 
@@ -21,12 +20,13 @@ const HSL_SRC =
 const COMBINED_SRC = [HEX_SRC, RGB_SRC, HSL_SRC].map((r) => r.source).join("|");
 
 // Widget
-class ColorWidget extends WidgetType {
+export class ColorWidget extends WidgetType {
 	constructor(
 		readonly color: string,
 		readonly originalText: string,
 		readonly showSwatch: boolean,
 		readonly colorizeText: boolean,
+		readonly ignoreContrast: boolean,
 	) {
 		super();
 	}
@@ -36,7 +36,8 @@ class ColorWidget extends WidgetType {
 			this.color === other.color &&
 			this.originalText === other.originalText &&
 			this.showSwatch === other.showSwatch &&
-			this.colorizeText === other.colorizeText
+			this.colorizeText === other.colorizeText &&
+			this.ignoreContrast === other.ignoreContrast
 		);
 	}
 
@@ -58,7 +59,10 @@ class ColorWidget extends WidgetType {
 		const label = doc.createElement("span");
 		label.textContent = this.originalText;
 
-		if (this.colorizeText && hasGoodContrast(this.color)) {
+		if (
+			this.colorizeText &&
+			hasGoodContrast(this.color, this.ignoreContrast)
+		) {
 			label.className = "cp-colored-text";
 			label.setCssProps({ "--cp-text-color": this.color });
 		}
@@ -83,14 +87,13 @@ function makeDecorator(settings: IroViewSettings): MatchDecorator {
 					match[0],
 					settings.showSwatchInEditor,
 					settings.colorizeTextInEditor,
+					settings.ignoreContrast,
 				),
 			}),
 	});
 }
 
-export function createIroViewExtension(
-	getSettings: () => IroViewSettings,
-) {
+export function createIroViewExtension(getSettings: () => IroViewSettings) {
 	return ViewPlugin.fromClass(
 		class implements PluginValue {
 			decorations: DecorationSet;
@@ -99,14 +102,14 @@ export function createIroViewExtension(
 
 			constructor(view: EditorView) {
 				const s = getSettings();
-				this.lastKey = `${s.showSwatchInEditor}|${s.colorizeTextInEditor}`;
+				this.lastKey = `${s.showSwatchInEditor}|${s.colorizeTextInEditor}|${s.ignoreContrast}`;
 				this.decorator = makeDecorator(s);
 				this.decorations = this.decorator.createDeco(view);
 			}
 
 			update(update: ViewUpdate) {
 				const s = getSettings();
-				const key = `${s.showSwatchInEditor}|${s.colorizeTextInEditor}`;
+				const key = `${s.showSwatchInEditor}|${s.colorizeTextInEditor}|${s.ignoreContrast}`;
 
 				if (key !== this.lastKey) {
 					this.lastKey = key;

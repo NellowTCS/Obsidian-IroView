@@ -1,34 +1,41 @@
 {
 	"name": "iroview",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "A color preview for HEX, HSL, RGB values in your notes, similar to VSCode's color preview.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-		"lint": "eslint src/",
-		"make-pretty": "prettier --write .",
-		"version": "node version-bump.mjs && git add manifest.json versions.json"
+		"version": "node version-bump.mjs && git add manifest.json versions.json",
+		"lint": "eslint \"src/**/*.{ts,js}\"",
+		"make-pretty": "prettier --write \"src/**/*.{ts,js,json,md}\"",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage"
 	},
-	"keywords": [],
-	"author": "",
 	"license": "MIT",
+	"engines": {
+		"node": ">=22"
+	},
 	"devDependencies": {
-		"@eslint/js": "^10.0.1",
 		"@types/node": "^26.2.0",
 		"@typescript-eslint/eslint-plugin": "8.67.0",
-		"@typescript-eslint/parser": "8.67.0",
+		"@typescript-eslint/parser": "^8.64.0",
+		"@vitest/coverage-v8": "^4.1.11",
 		"builtin-modules": "5.3.0",
 		"esbuild": "0.28.2",
-		"eslint": "^10.9.0",
+		"eslint": "^10.8.1",
 		"eslint-plugin-obsidianmd": "^0.4.1",
+		"jsdom": "^28.0.0",
 		"obsidian": "1.13.1",
 		"prettier": "^3.9.6",
 		"tslib": "2.8.1",
 		"typescript": "6.0.3",
-		"typescript-eslint": "^8.67.0"
+		"typescript-eslint": "^8.67.0",
+		"vitest": "^4.1.11"
 	},
 	"dependencies": {
-		"@codemirror/view": "^6.38.6"
+		"@codemirror/view": "^6.38.6",
+		"@rolldown/binding-linux-x64-gnu": "^1.2.6"
 	}
 }

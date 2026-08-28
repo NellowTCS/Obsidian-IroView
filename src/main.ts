@@ -1,5 +1,7 @@
-import { Plugin, MarkdownView, MarkdownPostProcessorContext } from "obsidian";
-import { IroViewSettings, DEFAULT_SETTINGS } from "./types";
+import { Plugin, MarkdownView } from "obsidian";
+import type { MarkdownPostProcessorContext } from "obsidian";
+import { DEFAULT_SETTINGS } from "./types";
+import type { IroViewSettings } from "./types";
 import { createIroViewExtension } from "./editor/editorExtension";
 import { processReadingView } from "./reading/readingViewProcessor";
 import { IroViewSettingTab } from "./ui/settingsTab";
