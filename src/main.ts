@@ -11,6 +11,7 @@ import type { EditorView } from "@codemirror/view";
 
 export default class IroViewPlugin extends Plugin {
 	settings: IroViewSettings = { ...DEFAULT_SETTINGS };
+	private tableRefreshFrame: number | null = null;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -24,6 +25,15 @@ export default class IroViewPlugin extends Plugin {
 		});
 
 		this.addSettingTab(new IroViewSettingTab(this.app, this));
+	}
+
+	onunload(): void {
+		// Ensure the pending table refresh (scheduled in saveSettings) never
+		// runs after the plugin is unloaded and `this.app` has been nulled.
+		if (this.tableRefreshFrame !== null) {
+			window.cancelAnimationFrame(this.tableRefreshFrame);
+			this.tableRefreshFrame = null;
+		}
 	}
 
 	async loadSettings(): Promise<void> {
@@ -58,7 +68,11 @@ export default class IroViewPlugin extends Plugin {
 
 		// Tables render lazily, so `rerender` does not re-run our postprocessor
 		// on their cells. Refresh tables explicitly after the render completes.
-		window.requestAnimationFrame(() => {
+		if (this.tableRefreshFrame !== null) {
+			window.cancelAnimationFrame(this.tableRefreshFrame);
+		}
+		this.tableRefreshFrame = window.requestAnimationFrame(() => {
+			this.tableRefreshFrame = null;
 			this.app.workspace.iterateAllLeaves((leaf) => {
 				const view = leaf.view;
 				if (!(view instanceof MarkdownView)) return;

@@ -34,7 +34,6 @@
 		"vitest": "^4.1.11"
 	},
 	"dependencies": {
-		"@codemirror/view": "^6.38.6",
-		"@rolldown/binding-linux-x64-gnu": "^1.2.6"
+		"@codemirror/view": "^6.38.6"
 	}
 }
