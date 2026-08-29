@@ -3,7 +3,11 @@ import type { MarkdownPostProcessorContext } from "obsidian";
 import { DEFAULT_SETTINGS } from "./types";
 import type { IroViewSettings } from "./types";
 import { createIroViewExtension } from "./editor/editorExtension";
-import { processReadingView } from "./reading/readingViewProcessor";
+import {
+	applyColorization,
+	processReadingView,
+	stripColorWrappers,
+} from "./reading/readingViewProcessor";
 import { IroViewSettingTab } from "./ui/settingsTab";
 import type { EditorView } from "@codemirror/view";
 
@@ -19,8 +23,14 @@ export default class IroViewPlugin extends Plugin {
 
 		this.registerMarkdownPostProcessor(
 			(element: HTMLElement, context: MarkdownPostProcessorContext) => {
+				// Always strip stale wrappers first. Obsidian can restore notes
+				// from a cached rendering that still contains wrappers from a
+				// previous session; stripping unconditionally keeps those from
+				// persisting/duplicating even when the feature is turned off.
 				if (this.settings.enableInReadingView) {
 					processReadingView(element, context, this.settings);
+				} else {
+					stripColorWrappers(element);
 				}
 			},
 		);
@@ -49,17 +59,18 @@ export default class IroViewPlugin extends Plugin {
 			}
 		});
 
-		// Re-render reading view panes so post-processors run again with new settings.
+		// Directly re-colorize the live reading-view DOM.
 		this.app.workspace.iterateAllLeaves((leaf) => {
 			const view = leaf.view;
-			if (view instanceof MarkdownView) {
-				// previewMode.rerender is not in public types
-				const preview = (
-					view as unknown as {
-						previewMode?: { rerender: (full: boolean) => void };
-					}
-				).previewMode;
-				if (preview) preview.rerender(true);
+			if (!(view instanceof MarkdownView)) return;
+
+			const contentEl = (
+				view as unknown as {
+					contentEl?: HTMLElement;
+				}
+			).contentEl;
+			if (contentEl) {
+				applyColorization(contentEl, this.settings);
 			}
 		});
 	}
