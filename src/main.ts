@@ -1,12 +1,17 @@
-import { Plugin, MarkdownView, MarkdownPostProcessorContext } from "obsidian";
-import { IroViewSettings, DEFAULT_SETTINGS } from "./types";
+import { Plugin, MarkdownView } from "obsidian";
+import { DEFAULT_SETTINGS } from "./types";
+import type { IroViewSettings } from "./types";
 import { createIroViewExtension } from "./editor/editorExtension";
-import { processReadingView } from "./reading/readingViewProcessor";
+import {
+	applyColorizationToTables,
+	processReadingView,
+} from "./reading/readingViewProcessor";
 import { IroViewSettingTab } from "./ui/settingsTab";
 import type { EditorView } from "@codemirror/view";
 
 export default class IroViewPlugin extends Plugin {
 	settings: IroViewSettings = { ...DEFAULT_SETTINGS };
+	private tableRefreshFrame: number | null = null;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -15,15 +20,20 @@ export default class IroViewPlugin extends Plugin {
 			createIroViewExtension(() => this.settings),
 		);
 
-		this.registerMarkdownPostProcessor(
-			(element: HTMLElement, context: MarkdownPostProcessorContext) => {
-				if (this.settings.enableInReadingView) {
-					processReadingView(element, context, this.settings);
-				}
-			},
-		);
+		this.registerMarkdownPostProcessor((element, context) => {
+			processReadingView(element, context, () => this.settings);
+		});
 
 		this.addSettingTab(new IroViewSettingTab(this.app, this));
+	}
+
+	onunload(): void {
+		// Ensure the pending table refresh (scheduled in saveSettings) never
+		// runs after the plugin is unloaded and `this.app` has been nulled.
+		if (this.tableRefreshFrame !== null) {
+			window.cancelAnimationFrame(this.tableRefreshFrame);
+			this.tableRefreshFrame = null;
+		}
 	}
 
 	async loadSettings(): Promise<void> {
@@ -47,18 +57,32 @@ export default class IroViewPlugin extends Plugin {
 			}
 		});
 
-		// Re-render reading view panes so post-processors run again with new settings.
+		// Rebuild the reading view
 		this.app.workspace.iterateAllLeaves((leaf) => {
 			const view = leaf.view;
 			if (view instanceof MarkdownView) {
-				// previewMode.rerender is not in public types
-				const preview = (
-					view as unknown as {
-						previewMode?: { rerender: (full: boolean) => void };
-					}
-				).previewMode;
-				if (preview) preview.rerender(true);
+				const previewMode = view.previewMode;
+				if (previewMode) previewMode.rerender(true);
 			}
+		});
+
+		// Tables render lazily, so `rerender` does not re-run our postprocessor
+		// on their cells. Refresh tables explicitly after the render completes.
+		if (this.tableRefreshFrame !== null) {
+			window.cancelAnimationFrame(this.tableRefreshFrame);
+		}
+		this.tableRefreshFrame = window.requestAnimationFrame(() => {
+			this.tableRefreshFrame = null;
+			this.app.workspace.iterateAllLeaves((leaf) => {
+				const view = leaf.view;
+				if (!(view instanceof MarkdownView)) return;
+				const contentEl = (
+					view as unknown as { contentEl?: HTMLElement }
+				).contentEl;
+				if (contentEl) {
+					applyColorizationToTables(contentEl, this.settings);
+				}
+			});
 		});
 	}
 }

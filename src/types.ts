@@ -12,6 +12,9 @@ export interface IroViewSettings {
 
 	/** Enable color previews in reading view */
 	enableInReadingView: boolean;
+
+	/** Ignore the contrast gate and always colorize text */
+	ignoreContrast: boolean;
 }
 
 /**
@@ -21,6 +24,7 @@ export const DEFAULT_SETTINGS: IroViewSettings = {
 	showSwatchInEditor: true,
 	colorizeTextInEditor: false,
 	enableInReadingView: true,
+	ignoreContrast: false,
 };
 
 /**

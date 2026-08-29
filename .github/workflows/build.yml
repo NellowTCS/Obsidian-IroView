@@ -16,10 +16,10 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v3
 
-            - name: Use Node.js 18
-              uses: actions/setup-node@v3
+            - name: Use Node.js 22
+              uses: actions/setup-node@v7
               with:
-                  node-version: "18.x"
+                  node-version: "22.x"
 
             - name: Cache npm
               uses: actions/cache@v4
@@ -35,52 +35,17 @@ jobs:
             - name: Build plugin
               run: npm run build
 
-            - name: Collect dist/main.js and manifest.json and styles.css
-              id: meta
+            - name: Verify build artifacts exist
               run: |
-                  set -euo pipefail
-                  mkdir -p build-output
+                  test -f dist/main.js
+                  test -f dist/styles.css
+                  test -f dist/manifest.json
 
-                  # copy dist/main.js
-                  if [ -f "dist/main.js" ]; then
-                    cp -v dist/main.js build-output/main.js
-                  else
-                    echo "Error: dist/main.js not found."
-                    ls -la dist || true
-                    exit 1
-                  fi
-
-                  # copy dist/styles.css
-                  if [ -f "dist/styles.css" ]; then
-                    cp -v dist/styles.css build-output/styles.css
-                  else
-                    echo "Error: dist/styles.css not found."
-                    ls -la dist || true
-                    exit 1
-                  fi
-
-                  # copy manifest.json from repo root
-                  if [ -f "manifest.json" ]; then
-                    cp -v manifest.json build-output/manifest.json
-                  else
-                    echo "Error: manifest.json not found in repository root."
-                    exit 2
-                  fi
-
-                  # set outputs for artifact naming (requires jq, already in GitHub runners)
-                  PACKAGE_NAME=$(jq -r .name manifest.json)
-                  PACKAGE_VERSION=$(jq -r .version manifest.json)
-                  echo "package_name=${PACKAGE_NAME}" >> "$GITHUB_OUTPUT"
-                  echo "package_version=${PACKAGE_VERSION}" >> "$GITHUB_OUTPUT"
-
-                  echo "build-output contents:"
-                  ls -la build-output
-
-            - name: Upload artifact (main.js + styles.css+ manifest.json)
+            - name: Upload artifact (main.js + styles.css + manifest.json)
               uses: actions/upload-artifact@v4
               with:
-                  name: ${{ steps.meta.outputs.package_name }}-${{ steps.meta.outputs.package_version }}-${{ github.run_id }}
+                  name: iroview-${{ github.run_id }}
                   path: |
-                      build-output/main.js
-                      build-output/styles.css
-                      build-output/manifest.json
+                      dist/main.js
+                      dist/styles.css
+                      dist/manifest.json
