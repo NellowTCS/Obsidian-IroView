@@ -1,7 +1,7 @@
 import { MarkdownRenderChild } from "obsidian";
+import type { MarkdownPostProcessorContext } from "obsidian";
 import { findColorsInText, hasGoodContrast } from "../utils/colorParser";
 import type { IroViewSettings } from "../types";
-import type { MarkdownPostProcessorContext } from "obsidian";
 
 /**
  * Replace all previously created color wrappers inside `root` with plain text,
@@ -18,8 +18,6 @@ export function stripColorWrappers(root: HTMLElement): void {
 /**
  * Re-scan `root` and colorize any color values found in it, replacing plain
  * text nodes with swatch/text wrappers according to the current settings.
- * Existing wrappers are stripped first so this is idempotent and safe to call
- * on already-processed, lazily-cached DOM
  */
 export function applyColorization(
 	root: HTMLElement,
@@ -74,6 +72,18 @@ export function applyColorization(
 	}
 }
 
+/**
+ * Re-colorize only the tables inside `root`.
+ */
+export function applyColorizationToTables(
+	root: HTMLElement,
+	settings: IroViewSettings,
+): void {
+	root.querySelectorAll("table").forEach((table) => {
+		applyColorization(table, settings);
+	});
+}
+
 function createColorElement(
 	settings: IroViewSettings,
 	color: string,
@@ -108,16 +118,19 @@ function createColorElement(
 	return wrapper;
 }
 
+/**
+ * Per-block render child managed by Obsidian via `context.addChild()`.
+ */
 class ColorSpanChild extends MarkdownRenderChild {
 	constructor(
 		element: HTMLElement,
-		private readonly settings: IroViewSettings,
+		private readonly getSettings: () => IroViewSettings,
 	) {
 		super(element);
 	}
 
 	onload(): void {
-		applyColorization(this.containerEl, this.settings);
+		applyColorization(this.containerEl, this.getSettings());
 	}
 
 	onunload(): void {
@@ -128,7 +141,7 @@ class ColorSpanChild extends MarkdownRenderChild {
 export function processReadingView(
 	element: HTMLElement,
 	context: MarkdownPostProcessorContext,
-	settings: IroViewSettings,
+	getSettings: () => IroViewSettings,
 ): void {
-	context.addChild(new ColorSpanChild(element, settings));
+	context.addChild(new ColorSpanChild(element, getSettings));
 }
