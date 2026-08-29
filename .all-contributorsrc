@@ -7,5 +7,15 @@
   "commitType": "docs",
   "commitConvention": "angular",
   "contributorsPerLine": 7,
-  "contributors": []
+  "contributors": [
+    {
+      "login": "ALTCODE255",
+      "name": "Nameless",
+      "avatar_url": "https://avatars.githubusercontent.com/u/68763594?v=4",
+      "profile": "https://github.com/ALTCODE255",
+      "contributions": [
+        "bug"
+      ]
+    }
+  ]
 }
