@@ -7,5 +7,15 @@
   "commitType": "docs",
   "commitConvention": "angular",
   "contributorsPerLine": 7,
-  "contributors": []
+  "contributors": [
+    {
+      "login": "lordekeen",
+      "name": "Jhonny Rosa",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9127621?v=4",
+      "profile": "https://github.com/lordekeen",
+      "contributions": [
+        "bug"
+      ]
+    }
+  ]
 }
