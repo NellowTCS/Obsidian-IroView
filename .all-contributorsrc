@@ -1,4 +1,11 @@
 {
   "projectName": "Obsidian-IroView",
-  "projectOwner": "NellowTCS"
+  "projectOwner": "NellowTCS",
+  "files": [
+    "README.md"
+  ],
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributorsPerLine": 7,
+  "contributors": []
 }
