@@ -94,6 +94,7 @@ If you prefer installing manually:
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/lordekeen"><img src="https://avatars.githubusercontent.com/u/9127621?v=4?s=100" width="100px;" alt="Jhonny Rosa"/><br /><sub><b>Jhonny Rosa</b></sub></a><br /><a href="#bug-lordekeen" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ALTCODE255"><img src="https://avatars.githubusercontent.com/u/68763594?v=4?s=100" width="100px;" alt="Nameless"/><br /><sub><b>Nameless</b></sub></a><br /><a href="#bug-ALTCODE255" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
