@@ -4,7 +4,6 @@ import { DEFAULT_SETTINGS } from "./types";
 import type { IroViewSettings } from "./types";
 import { createIroViewExtension } from "./editor/editorExtension";
 import {
-	applyColorization,
 	processReadingView,
 	stripColorWrappers,
 } from "./reading/readingViewProcessor";
@@ -59,19 +58,20 @@ export default class IroViewPlugin extends Plugin {
 			}
 		});
 
-		// Directly re-colorize the live reading-view DOM.
+		// Re-run the reading-view post-processor so wrappers are recomputed with
+		// the new settings. This is the single source of truth for reading-view
+		// colorization; a second direct DOM pass here races the post-processor
+		// and can produce duplicate swatches when toggling settings.
 		this.app.workspace.iterateAllLeaves((leaf) => {
 			const view = leaf.view;
 			if (!(view instanceof MarkdownView)) return;
 
-			const contentEl = (
+			const preview = (
 				view as unknown as {
-					contentEl?: HTMLElement;
+					previewMode?: { rerender: (full: boolean) => void };
 				}
-			).contentEl;
-			if (contentEl) {
-				applyColorization(contentEl, this.settings);
-			}
+			).previewMode;
+			if (preview) preview.rerender(true);
 		});
 	}
 }
