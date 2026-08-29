@@ -58,7 +58,7 @@ export default class IroViewPlugin extends Plugin {
 
 		// Tables render lazily, so `rerender` does not re-run our postprocessor
 		// on their cells. Refresh tables explicitly after the render completes.
-		requestAnimationFrame(() => {
+		window.requestAnimationFrame(() => {
 			this.app.workspace.iterateAllLeaves((leaf) => {
 				const view = leaf.view;
 				if (!(view instanceof MarkdownView)) return;

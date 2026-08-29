@@ -50,7 +50,7 @@ export function applyColorization(
 		const matches = findColorsInText(text);
 		if (matches.length === 0) continue;
 
-		const fragment = root.ownerDocument.createDocumentFragment();
+		const fragment = createFragment();
 		let cursor = 0;
 		for (const match of matches) {
 			if (match.from > cursor) {
@@ -88,19 +88,18 @@ function createColorElement(
 	settings: IroViewSettings,
 	color: string,
 ): HTMLElement {
-	const doc = window.activeDocument ?? document;
-	const wrapper = doc.createElement("span");
+	const wrapper = createSpan();
 	wrapper.className = "cp-color-wrapper";
 
 	if (settings.showSwatchInEditor) {
-		const swatch = doc.createElement("span");
+		const swatch = createSpan();
 		swatch.className = "cp-color-swatch";
 		swatch.setAttribute("aria-label", `Color: ${color}`);
 		swatch.setCssProps({ "--cp-swatch-color": color });
 		wrapper.appendChild(swatch);
 	}
 
-	const label = doc.createElement("span");
+	const label = createSpan();
 	label.textContent = color;
 
 	if (

@@ -14,9 +14,9 @@ function run(element: HTMLElement, settings: IroViewSettings): void {
 }
 
 function fencedCode(text: string): HTMLElement {
-	const root = document.createElement("div");
-	const pre = document.createElement("pre");
-	const code = document.createElement("code");
+	const root = createDiv();
+	const pre = createEl("pre");
+	const code = createEl("code");
 	code.textContent = text;
 	pre.appendChild(code);
 	root.appendChild(pre);
@@ -24,9 +24,9 @@ function fencedCode(text: string): HTMLElement {
 }
 
 function inlineCode(text: string): HTMLElement {
-	const root = document.createElement("div");
-	const p = document.createElement("p");
-	const code = document.createElement("code");
+	const root = createDiv();
+	const p = createEl("p");
+	const code = createEl("code");
 	code.textContent = text;
 	p.appendChild(code);
 	root.appendChild(p);
@@ -34,18 +34,18 @@ function inlineCode(text: string): HTMLElement {
 }
 
 function plainText(text: string): HTMLElement {
-	const root = document.createElement("div");
-	const p = document.createElement("p");
+	const root = createDiv();
+	const p = createEl("p");
 	p.textContent = text;
 	root.appendChild(p);
 	return root;
 }
 
 function tableCell(text: string): HTMLElement {
-	const root = document.createElement("div");
-	const table = document.createElement("table");
-	const tr = document.createElement("tr");
-	const td = document.createElement("td");
+	const root = createDiv();
+	const table = createEl("table");
+	const tr = createEl("tr");
+	const td = createEl("td");
 	td.textContent = text;
 	tr.appendChild(td);
 	table.appendChild(tr);
@@ -54,11 +54,11 @@ function tableCell(text: string): HTMLElement {
 }
 
 function multiCellTable(cells: string[]): HTMLElement {
-	const root = document.createElement("div");
-	const table = document.createElement("table");
-	const tr = document.createElement("tr");
+	const root = createDiv();
+	const table = createEl("table");
+	const tr = createEl("tr");
 	for (const text of cells) {
-		const td = document.createElement("td");
+		const td = createEl("td");
 		td.textContent = text;
 		tr.appendChild(td);
 	}
@@ -71,20 +71,20 @@ function tableWithHeader(
 	tableTexts: string[],
 	headerTexts: string[],
 ): HTMLElement {
-	const root = document.createElement("div");
-	const table = document.createElement("table");
-	const thead = document.createElement("thead");
-	const headRow = document.createElement("tr");
+	const root = createDiv();
+	const table = createEl("table");
+	const thead = createEl("thead");
+	const headRow = createEl("tr");
 	for (const text of headerTexts) {
-		const th = document.createElement("th");
+		const th = createEl("th");
 		th.textContent = text;
 		headRow.appendChild(th);
 	}
 	thead.appendChild(headRow);
-	const tbody = document.createElement("tbody");
-	const bodyRow = document.createElement("tr");
+	const tbody = createEl("tbody");
+	const bodyRow = createEl("tr");
 	for (const text of tableTexts) {
-		const td = document.createElement("td");
+		const td = createEl("td");
 		td.textContent = text;
 		bodyRow.appendChild(td);
 	}
@@ -291,8 +291,8 @@ describe("processReadingView - fenced code blocks", () => {
 	});
 
 	it("applyColorizationToTables colorizes a table embedded in arbitrary DOM", () => {
-		const root = document.createElement("div");
-		const heading = document.createElement("h1");
+		const root = createDiv();
+		const heading = createEl("h1");
 		heading.textContent = "Use #00ff00 in this heading";
 		const table = tableCell("#ff0000");
 		root.appendChild(heading);
@@ -308,7 +308,7 @@ describe("processReadingView - fenced code blocks", () => {
 	});
 
 	it("applyColorizationToTables does not double swatches when run repeatedly", () => {
-		const root = document.createElement("div");
+		const root = createDiv();
 		root.appendChild(tableCell("#ff0000"));
 
 		applyColorizationToTables(
@@ -521,7 +521,7 @@ describe("applyColorizationToTables - multi-cell and headers", () => {
 	});
 
 	it("does not duplicate across a full contentEl-style document with mixed blocks", () => {
-		const root = document.createElement("div");
+		const root = createDiv();
 		root.appendChild(plainText("use #ff0000 here")); // non-table: NOT touched
 		root.appendChild(multiCellTable(["#00ff00", "#ff0000"])); // table: touched
 		root.appendChild(tableWithHeader(["#0000ff"], ["#ff0000"])); // table: touched
@@ -537,7 +537,7 @@ describe("applyColorizationToTables - multi-cell and headers", () => {
 	});
 
 	it("adding an extra table on a later pass colorizes only the new table", () => {
-		const root = document.createElement("div");
+		const root = createDiv();
 		root.appendChild(tableCell("#ff0000"));
 		applyColorizationToTables(
 			root,

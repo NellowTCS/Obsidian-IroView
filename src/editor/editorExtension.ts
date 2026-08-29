@@ -42,21 +42,18 @@ export class ColorWidget extends WidgetType {
 	}
 
 	toDOM(view: EditorView): HTMLElement {
-		// Use the editor's own document
-		const doc = view.dom.ownerDocument;
-
-		const wrapper = doc.createElement("span");
+		const wrapper = createSpan();
 		wrapper.className = "cp-color-inline";
 		wrapper.setAttribute("aria-label", `Color: ${this.color}`);
 
 		if (this.showSwatch) {
-			const swatch = doc.createElement("span");
+			const swatch = createSpan();
 			swatch.className = "cp-color-swatch";
 			swatch.setCssProps({ "--cp-swatch-color": this.color });
 			wrapper.appendChild(swatch);
 		}
 
-		const label = doc.createElement("span");
+		const label = createSpan();
 		label.textContent = this.originalText;
 
 		if (
